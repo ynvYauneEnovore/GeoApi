@@ -1,0 +1,66 @@
+﻿namespace GeoData.Models;
+@{
+    ViewData["Title"] = "Envio";
+}
+
+<div class="text-center">
+    <h1>
+        En la siguiente sección se desarrolla la lógica de petición de las respectivas API's.
+    </h1>
+    <h6>   
+        Recopilación de datos como el país de origen del visitante como la IP y datos relevantes para la validación.
+    </h6>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Se realiza una petición AJAX para obtener información de geolocalización
+            $.getJSON('https://api.vatcomply.com/geolocate', function (ip) {
+                // Se obtiene la información de la IP, nombre y moneda del resultado de la petición
+                var data = {
+                    ip: ip.ip,
+                    name: ip.name,
+                    currency: ip.currency,
+                };
+
+                const moneda = ip.currency; // código de la moneda que deseas obtener
+
+                // Se realiza otra petición AJAX para obtener información de las monedas
+                fetch('https://api.vatcomply.com/currencies')
+                    .then(response => response.json())
+                    .then(data1 => {
+                        console.log(data.ip); // muestra el ip del visitante
+                        console.log(data.name); // muestra el nombre del país del visitante
+                        console.log(data.currency); // muestra el nombre de la moneda del país
+                        window.datosMoneda = data1[moneda];
+                        console.log(datosMoneda.name); // muestra el nombre de la moneda
+                        console.log(datosMoneda.symbol); // muestra el símbolo de la moneda
+
+                        // Se envían los datos al servidor mediante una petición AJAX de tipo POST
+                        $.ajax({
+                            type: 'POST',
+                            url: '/Envio/Guardar', // URL del controlador y acción en tu aplicación .NET
+                            data: JSON.stringify({
+                                ip: data.ip,
+                                name: data.name,
+                                currency: data.currency,
+                                currency_name: window.datosMoneda.name,
+                                currency_symbol: window.datosMoneda.symbol
+                            }),
+                            dataType: 'json',
+                            contentType: 'application/json',
+                            success: function (response) {
+                                console.log(response);
+                            },
+                            error: function (xhr, status, error) {
+                                console.log(xhr.responseText);
+                            }
+                        });
+                    })
+                    .catch(error => console.error("NO TENEMOS UNA MONEDA DE SU PAÍS"));
+            });
+        });
+    </script>
+}
+
