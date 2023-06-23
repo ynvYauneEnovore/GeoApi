@@ -5,8 +5,6 @@ namespace GeoApi.Data
 {
     public class MvcDataContext : DbContext
     {
-        internal object GeoData;
-
         public MvcDataContext(DbContextOptions<MvcDataContext> options)
             : base(options)
         {
